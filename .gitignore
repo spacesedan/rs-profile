@@ -94,4 +94,3 @@ fabric.properties
 **/*.pb.go
 **/*.gw.go
 serverless
-infra
