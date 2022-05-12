@@ -1,9 +1,8 @@
-package repo
+package datastores
 
 import (
 	"context"
 	"fmt"
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -17,30 +16,23 @@ var (
 	traitCollection = "-all-traits"
 )
 
-type DAO interface {
+type Repo interface {
 	NewMetaQuery() MetaQuery
 	NewCollectionQuery() CollectionQuery
 	NewTraitQuery() TraitQuery
 }
 
-type dao struct {
+type repo struct {
 }
 
 var DB *mongo.Database
 
-func NewDAO(db *mongo.Database) DAO {
+func NewRepo(db *mongo.Database) Repo {
 	DB = db
-	return &dao{}
+	return &repo{}
 }
 
 func NewMongo() (*mongo.Database, error) {
-	if os.Getenv("APP_ENV") != "production" {
-		err := godotenv.Load()
-		if err != nil {
-			fmt.Println("Could not load .env file")
-			return nil, err
-		}
-	}
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(os.Getenv("MONGO_URI")))
 	if err != nil {
@@ -71,14 +63,14 @@ func NewMongo() (*mongo.Database, error) {
 
 }
 
-func (d *dao) NewMetaQuery() MetaQuery {
+func (r *repo) NewMetaQuery() MetaQuery {
 	return &metaQuery{}
 }
 
-func (d *dao) NewCollectionQuery() CollectionQuery {
+func (r *repo) NewCollectionQuery() CollectionQuery {
 	return &collectionQuery{}
 }
 
-func (d *dao) NewTraitQuery() TraitQuery {
+func (r *repo) NewTraitQuery() TraitQuery {
 	return &traitQuery{}
 }

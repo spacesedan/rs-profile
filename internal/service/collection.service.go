@@ -1,9 +1,9 @@
 package service
 
 import (
+	"github.com/spacesedan/profile-tracker/internal/datastores"
 	"github.com/spacesedan/profile-tracker/internal/dto"
 	"github.com/spacesedan/profile-tracker/internal/models"
-	"github.com/spacesedan/profile-tracker/internal/repo"
 	"github.com/spacesedan/profile-tracker/internal/utils"
 	"log"
 	"net/url"
@@ -16,10 +16,10 @@ type CollectionService interface {
 }
 
 type collectionService struct {
-	dao repo.DAO
+	dao *datastores.DAO
 }
 
-func NewCollectionService(dao repo.DAO) CollectionService {
+func NewCollectionService(dao *datastores.DAO) CollectionService {
 	return &collectionService{
 		dao: dao,
 	}
@@ -43,7 +43,7 @@ func (c *collectionService) GetOwnedCollection(values url.Values) []*models.Owne
 	collections := values["collection"]
 
 	log.Printf("COLLECTIONS: %v", collections)
-	return c.dao.NewMetaQuery().GetByName(collections)
+	return c.dao.Repo.NewMetaQuery().GetByName(collections)
 }
 
 func (c *collectionService) GetContractAddress(url, slug string) string {

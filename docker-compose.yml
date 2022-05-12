@@ -1,14 +1,27 @@
 version: '3'
-
 services:
-  profile-api:
-    image: spacecoupe/profile-api:v1
+  redis:
+    container_name: redis
+    hostname: redis
     ports:
-      - "8080:8080"
+      - "6378:6379"
+    networks:
+      - db
+    image: redis
+
+  redis-commander:
+    container_name: redis-commander
+    hostname: redis-commander
+    image: rediscommander/redis-commander:latest
+    restart: always
+    networks:
+      - db
+    ports:
+      - "8081:8081"
     environment:
-      - FIRE_PROX=https://zybnz2o681.execute-api.us-west-2.amazonaws.com/fireprox/
-      - DB=nft-db
-      - MONGO_URI=mongodb+srv://spacecoupe:69Mapaches@spacecoupe.efklh.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
-      - OS_KEY=ef6a0ff6fecc43ba961a779263cc7231
-      - PORT=8080
-      - APP_ENV=production
+      - REDIS_HOSTS=local:redis:6379
+
+
+
+networks:
+  db:

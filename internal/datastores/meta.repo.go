@@ -1,4 +1,4 @@
-package repo
+package datastores
 
 import (
 	"context"

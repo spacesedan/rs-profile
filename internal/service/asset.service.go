@@ -2,9 +2,9 @@ package service
 
 import (
 	"fmt"
+	"github.com/spacesedan/profile-tracker/internal/datastores"
 	"github.com/spacesedan/profile-tracker/internal/dto"
 	"github.com/spacesedan/profile-tracker/internal/models"
-	"github.com/spacesedan/profile-tracker/internal/repo"
 	"github.com/spacesedan/profile-tracker/internal/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
@@ -28,10 +28,10 @@ type AssetService interface {
 }
 
 type assetService struct {
-	dao repo.DAO
+	dao *datastores.DAO
 }
 
-func NewAssetService(dao repo.DAO) AssetService {
+func NewAssetService(dao *datastores.DAO) AssetService {
 	return &assetService{
 		dao: dao,
 	}
@@ -148,7 +148,7 @@ func (a *assetService) ScrapedAssetsConsumer(chA <-chan *models.TaskSingleAsset)
 	for {
 		select {
 		case msg := <-chA:
-			token := a.dao.NewCollectionQuery().GetToken(msg.Collection, msg.Asset.TokenID)
+			token := a.dao.Repo.NewCollectionQuery().GetToken(msg.Collection, msg.Asset.TokenID)
 			traitsWithValue := a.TraitsWithFloor(msg.Traits, token)
 			msg.Asset.FloorPrice = msg.FloorPrice
 			msg.Asset.TraitFloorPrice = traitsWithValue[0].FloorPrice.Price
@@ -214,7 +214,7 @@ func (a *assetService) HandleAssets(request dto.AssetRequest) []*models.AssetEnt
 	}
 	var floorPrice float64
 
-	coll, err := a.dao.NewMetaQuery().CheckIfScraped(request.Slug)
+	coll, err := a.dao.Repo.NewMetaQuery().CheckIfScraped(request.Slug)
 	if err != nil {
 		stats := a.GetStats(url, request.Slug)
 		if stats.Stats.Count == 0 {
@@ -242,7 +242,7 @@ func (a *assetService) HandleAssets(request dto.AssetRequest) []*models.AssetEnt
 		return assets
 	} else {
 		floorPrice = coll.FloorPrice.Price
-		traits, err := a.dao.NewTraitQuery().GetTraits(coll.Collection)
+		traits, err := a.dao.Repo.NewTraitQuery().GetTraits(coll.Collection)
 		if err != nil {
 			return nil
 		}

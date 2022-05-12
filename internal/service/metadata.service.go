@@ -1,9 +1,9 @@
 package service
 
 import (
+	"github.com/spacesedan/profile-tracker/internal/datastores"
 	"github.com/spacesedan/profile-tracker/internal/dto"
 	"github.com/spacesedan/profile-tracker/internal/models"
-	"github.com/spacesedan/profile-tracker/internal/repo"
 	"github.com/spacesedan/profile-tracker/internal/utils"
 	"os"
 	"strconv"
@@ -17,10 +17,10 @@ type MetadataService interface {
 }
 
 type metadataService struct {
-	dao repo.DAO
+	dao *datastores.DAO
 }
 
-func NewMetadataService(dao repo.DAO) MetadataService {
+func NewMetadataService(dao *datastores.DAO) MetadataService {
 	return &metadataService{
 		dao: dao,
 	}

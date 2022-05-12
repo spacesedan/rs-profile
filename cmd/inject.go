@@ -3,14 +3,13 @@ package main
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/spacesedan/profile-tracker/internal/datastores"
 	"github.com/spacesedan/profile-tracker/internal/handler"
-	"github.com/spacesedan/profile-tracker/internal/repo"
 	"github.com/spacesedan/profile-tracker/internal/service"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func inject(db *mongo.Database) (*gin.Engine, error) {
-	dao := repo.NewDAO(db)
+func inject(dao *datastores.DAO) (*gin.Engine, error) {
+
 	asset := service.NewAssetService(dao)
 	collection := service.NewCollectionService(dao)
 	metadata := service.NewMetadataService(dao)
