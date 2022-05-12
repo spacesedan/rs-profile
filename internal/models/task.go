@@ -1,14 +1,14 @@
 package models
 
 type TaskAssets struct {
-	Assets     []AssetEntity
+	Assets     []*AssetEntity
 	Collection string
 	FloorPrice float64
 	Traits     map[string]*DBTraits
 }
 
 type TaskSingleAsset struct {
-	Asset      AssetEntity
+	Asset      *AssetEntity
 	Collection string
 	FloorPrice float64
 	Traits     map[string]*DBTraits

@@ -1,9 +1,9 @@
 package models
 
 type Assets struct {
-	Next     string        `json:"next"`
-	Previous string        `json:"previous"`
-	Assets   []AssetEntity `json:"assets"`
+	Next     string         `json:"next"`
+	Previous string         `json:"previous"`
+	Assets   []*AssetEntity `json:"assets"`
 }
 
 type AssetEntity struct {

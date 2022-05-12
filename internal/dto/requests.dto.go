@@ -6,9 +6,13 @@ type AssetRequest struct {
 	Slug  string `json:"slug" form:"slug" validate:"required" binding:"required"`
 }
 
+type OwnedCollectionsRequest struct {
+	Collection []string `form:"collection" validate:"required" binding:"required"`
+}
+
 // CollectionRequest the request used in the collections endpoint
 type CollectionRequest struct {
-	Owner  string `form:"wallet_address"`
+	Owner  string `form:"owner"`
 	Cursor string `json:"cursor"`
 }
 

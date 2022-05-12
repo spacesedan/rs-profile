@@ -9,6 +9,8 @@ type SingleTask interface {
 }
 
 func Worker[S SingleTask](chA, chB chan S) {
-	task := <-chA
-	chB <- task
+	for task := range chA {
+		chB <- task
+	}
+
 }

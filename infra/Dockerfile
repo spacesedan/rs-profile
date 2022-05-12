@@ -16,6 +16,8 @@ FROM alpine:3.15
 
 WORKDIR /app
 
+EXPOSE 8080
+
 COPY --from=builder /app/profile-tracker .
 
 

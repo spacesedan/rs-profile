@@ -2,4 +2,13 @@ version: '3'
 
 services:
   profile-api:
-    image:
+    image: spacecoupe/profile-api:v1
+    ports:
+      - "8080:8080"
+    environment:
+      - FIRE_PROX=https://zybnz2o681.execute-api.us-west-2.amazonaws.com/fireprox/
+      - DB=nft-db
+      - MONGO_URI=mongodb+srv://spacecoupe:69Mapaches@spacecoupe.efklh.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
+      - OS_KEY=ef6a0ff6fecc43ba961a779263cc7231
+      - PORT=8080
+      - APP_ENV=production

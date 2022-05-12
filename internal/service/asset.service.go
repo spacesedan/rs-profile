@@ -6,6 +6,7 @@ import (
 	"github.com/spacesedan/profile-tracker/internal/models"
 	"github.com/spacesedan/profile-tracker/internal/repo"
 	"github.com/spacesedan/profile-tracker/internal/utils"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"os"
 	"sort"
@@ -13,16 +14,16 @@ import (
 )
 
 type AssetService interface {
-	GetAssets(url, slug, walletAddress string) *models.Assets
+	GetAssets(url, slug, walletAddress string) models.Assets
 	Producer(ch chan<- *models.TaskSingleAsset, task *models.TaskAssets)
 	AssetConsumer(chA <-chan *models.TaskSingleAsset) []*models.AssetEntity
 	TraitsWithFloor(traitMap map[string]*models.DBTraits, token *models.DBToken) []*models.DBTraits
 	ScrapedAssetsConsumer(chA <-chan *models.TaskSingleAsset) []*models.AssetEntity
 	HandleAssets(request dto.AssetRequest) []*models.AssetEntity
-	GetRarestTrait(asset models.AssetEntity) *models.DBTraits
-	GetTokenIds(assets []models.AssetEntity) []string
+	GetRarestTrait(asset *models.AssetEntity) *models.DBTraits
+	GetTokenIds(assets []*models.AssetEntity) []string
 	GetOwnedTokenIds(req dto.AssetsWithCursorRequest) []string
-	GetAssetsRecursively(assets []models.AssetEntity, req dto.AssetsWithCursorRequest) []models.AssetEntity
+	GetAssetsRecursively(assets []*models.AssetEntity, req dto.AssetsWithCursorRequest) []*models.AssetEntity
 	GetStats(url, slug string) models.OSStats
 }
 
@@ -37,13 +38,13 @@ func NewAssetService(dao repo.DAO) AssetService {
 }
 
 // GetAssetsRecursively Keep making request to the OpenSea API until the next cursor is nil or ""
-func (a *assetService) GetAssetsRecursively(assets []models.AssetEntity, req dto.AssetsWithCursorRequest) []models.AssetEntity {
+func (a *assetService) GetAssetsRecursively(assets []*models.AssetEntity, req dto.AssetsWithCursorRequest) []*models.AssetEntity {
 	var res models.Assets
 
 	var uri string
 
-	uri = os.Getenv("FIRE_PROX") + "assets?owner=" + req.Owner + "&collection=" + req.Slug + "&order_by=pk&order_direction=asc&limit=50&cursor=" + req.Cursor
-	utils.GetJson(uri, &res)
+	uri = os.Getenv("FIRE_PROX") + "assets?owner=" + req.Owner + "&collection_slug=" + req.Slug + "&order_direction=asc&limit=50&cursor=" + req.Cursor
+	utils.MakeOpenSeaRequest(uri, &res)
 
 	assets = append(assets, res.Assets...)
 	if res.Next == "" {
@@ -59,8 +60,8 @@ func (a *assetService) GetAssetsRecursively(assets []models.AssetEntity, req dto
 
 }
 
-func (a *assetService) GetAssets(url, slug, walletAddress string) *models.Assets {
-	var assets *models.Assets
+func (a *assetService) GetAssets(url, slug, walletAddress string) models.Assets {
+	var assets models.Assets
 	uri := url + "assets?owner=" + walletAddress + "&collection=" + slug + "&order_by=pk&order_direction=desc&limit=50"
 	utils.GetJson(uri, &assets)
 	log.Println(assets.Previous, assets.Previous)
@@ -76,13 +77,21 @@ func (a *assetService) GetStats(url, slug string) models.OSStats {
 }
 
 func (a *assetService) GetOwnedTokenIds(req dto.AssetsWithCursorRequest) []string {
-	var assets []models.AssetEntity
+	var assets []*models.AssetEntity
 
 	assets = a.GetAssetsRecursively(assets, req)
+	if assets == nil {
+		for i := 0; i < 10; i++ {
+			assets = a.GetAssetsRecursively(assets, req)
+			if assets != nil {
+				break
+			}
+		}
+	}
 	return a.GetTokenIds(assets)
 }
 
-func (a *assetService) GetRarestTrait(asset models.AssetEntity) *models.DBTraits {
+func (a *assetService) GetRarestTrait(asset *models.AssetEntity) *models.DBTraits {
 	sort.Slice(asset.Traits, func(i, j int) bool {
 		return asset.Traits[i].TraitCount > asset.Traits[j].TraitCount
 	})
@@ -124,9 +133,9 @@ func (a *assetService) AssetConsumer(chA <-chan *models.TaskSingleAsset) []*mode
 			msg.Asset.TopTrait.RarityScore = 0
 			msg.Asset.TopTrait.FloorPrice.Price = 0
 			msg.Asset.Rank = 0
-			msg.Asset.TopTrait.FloorPrice.PriceEntryTime = "null"
+			msg.Asset.TopTrait.FloorPrice.PriceEntryTime = primitive.NewDateTimeFromTime(time.Now())
 			msg.Asset.DBName = "null"
-			owned = append(owned, &msg.Asset)
+			owned = append(owned, msg.Asset)
 		case <-time.After(50 * time.Millisecond):
 			return owned
 		}
@@ -146,7 +155,7 @@ func (a *assetService) ScrapedAssetsConsumer(chA <-chan *models.TaskSingleAsset)
 			msg.Asset.TopTrait = traitsWithValue[0]
 			msg.Asset.DBName = msg.Collection
 			msg.Asset.Rank = token.RarityScoreRank
-			owned = append(owned, &msg.Asset)
+			owned = append(owned, msg.Asset)
 		case <-time.After(50 * time.Millisecond):
 			return owned
 		}
@@ -172,7 +181,7 @@ func (a *assetService) TraitsWithFloor(traitMap map[string]*models.DBTraits, tok
 
 }
 
-func (a *assetService) GetTokenIds(assets []models.AssetEntity) []string {
+func (a *assetService) GetTokenIds(assets []*models.AssetEntity) []string {
 	var tokenIds []string
 
 	for _, a := range assets {

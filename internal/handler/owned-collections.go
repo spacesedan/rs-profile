@@ -7,19 +7,22 @@ import (
 	"net/http"
 )
 
-func (h *Handler) Collections(c *gin.Context) {
-	var rb dto.CollectionRequest
+func (h *Handler) OwnedCollections(c *gin.Context) {
+	var rb dto.OwnedCollectionsRequest
 
 	if err := c.ShouldBindQuery(&rb); err != nil {
-		log.Printf("Could not parse queries: %v\n", err)
+		log.Printf("Could not bind url queries: %v", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"message": "bad request",
 		})
+		return
 	}
 
-	collections := h.CollectionService.GetCollections(rb)
+	queries := c.Request.URL.Query()
+	collections := h.CollectionService.GetOwnedCollection(queries)
 
 	c.JSON(http.StatusOK, gin.H{
 		"collections": collections,
 	})
+
 }

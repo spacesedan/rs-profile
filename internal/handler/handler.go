@@ -26,9 +26,10 @@ func NewHandler(c Config) {
 	}
 
 	c.Router.GET("/health", h.Health)
-	c.Router.GET("/api/v1/assets", h.Assets)
-	c.Router.GET("/api/v1/collections", h.Collections)
-	c.Router.GET("/api/v1/assets/owned", h.GetOwned)
-	c.Router.GET("/api/v1/metadata/:contractAddress/:walletAddress", h.Metadata)
+	c.Router.GET("/v1/api/assets", h.Assets)
+	c.Router.GET("/v1/api/collections", h.Collections)
+	c.Router.GET("/v1/api/collections/owned", h.OwnedCollections)
+	c.Router.GET("/v1/api/assets/owned", h.GetOwned)
+	c.Router.GET("/v1/api/metadata/:contractAddress/:walletAddress", h.Metadata)
 
 }
