@@ -16,6 +16,8 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	log.Printf("TODO: CHANGE ASSETS AND COLLECTIONS ENDPOINT TO USE RESERVOIR API")
+
 	log.Fatalln(app.Run())
 
 }
