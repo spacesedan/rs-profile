@@ -31,6 +31,7 @@ func inject(dao *datastores.DAO) (*gin.Engine, error) {
 		AssetService:      asset,
 		CollectionService: collection,
 		MetadataService:   metadata,
+		Cache:             dao.Cache,
 	})
 
 	return app, nil

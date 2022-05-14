@@ -6,11 +6,12 @@ import (
 	"github.com/go-redis/redis/v8"
 	"log"
 	"os"
+	"time"
 )
 
 type Cache interface {
 	Get(key string) *string
-	Set(key string, value interface{}) error
+	Set(key string, value interface{}, exp int) error
 	Delete(key string) error
 }
 
@@ -62,9 +63,11 @@ func (c *cache) Get(key string) *string {
 	}
 }
 
-func (c *cache) Set(key string, value interface{}) error {
+func (c *cache) Set(key string, value interface{}, exp int) error {
 	ctx := context.Background()
-	status := Rdb.Set(ctx, key, value, 0)
+
+	duration := time.Duration(exp) * time.Second
+	status := Rdb.Set(ctx, key, value, duration)
 	if status.Err() != nil {
 		log.Printf("Could not set value for KEY: %v\nERR: %v\n", key, status.Err())
 		return status.Err()

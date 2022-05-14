@@ -2,18 +2,22 @@ package dto
 
 // AssetRequest format of the request body sent from the client
 type AssetRequest struct {
-	Owner string `json:"owner" form:"owner" validate:"required" binding:"required"`
-	Slug  string `json:"slug" form:"slug" validate:"required" binding:"required"`
+	Owner           string `json:"owner" form:"owner" validate:"required" binding:"required"`
+	ContractAddress string `json:"contractAddress" form:"contractAddress" validate:"required" binding:"required"`
 }
 
 type OwnedCollectionsRequest struct {
 	Collection []string `form:"collection" validate:"required" binding:"required"`
 }
 
+type CollectionInformationRequest struct {
+	ContractAddress string `form:"contractAddress" validate:"required" binding:"required"`
+}
+
 // CollectionRequest the request used in the collections endpoint
 type CollectionRequest struct {
-	Owner  string `form:"owner"`
-	Cursor string `json:"cursor"`
+	Owner   string `form:"owner"`
+	Refresh bool   `form:"refresh"`
 }
 
 type MetadataRequest struct {
@@ -21,8 +25,8 @@ type MetadataRequest struct {
 	Owner           string `json:"owner" uri:"owner" validate:"required" binding:"required"`
 }
 
-type AssetsWithCursorRequest struct {
-	Slug   string `form:"slug" validate:"required"`
-	Owner  string `form:"owner" validate:"required"`
-	Cursor string
+type AssetsWithRefresh struct {
+	ContractAddress string `form:"contractAddress" validate:"required"`
+	Owner           string `form:"owner" validate:"required"`
+	Refresh         bool   `form:"refresh"`
 }
